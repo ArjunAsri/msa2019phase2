@@ -5,7 +5,7 @@ import TaskList from './components/TaskList';
 import Applogo from './image1385.png';
 import DatePicker from 'react-datepicker'
 import "react-datepicker/dist/react-datepicker.css";
-//import Moment from 'react-moment';
+//import moment from 'react-moment';
 
 interface IState {
 	startDate: any,
@@ -35,7 +35,7 @@ class App extends React.Component<{}, IState> {
 
 	public render() {
 		const { open } = this.state;
-		const selectedTask = this.state.currentTask
+		//const selectedTask = this.state.currentTask
 		return (
 		<div>
 			<div className="header-wrapper">
@@ -46,14 +46,13 @@ class App extends React.Component<{}, IState> {
 					<div className="btn-group">
 					<div className="btn btn-primary btn-action btn-add" onClick={this.onOpenTaskModal }>New Task</div>
 					<div className="btn btn-primary btn-action btn-add" onClick={this.updateTask }>Update Task</div>
-					<div className="btn btn-primary btn-action btn-add" onClick={this.deleteTask.bind(this,selectedTask.id ) }>Delete Task</div>
 					</div>
 			</div>
 			<div className="container">
 				<div className="row">
 					</div>
 					<div className="container">
-						<TaskList tasks={this.state.Tasks} selectNewTask={this.selectNewTask} serachByPriorityNumber={this.fetchTask}/>
+						<TaskList tasks={this.state.Tasks} selectNewTask={this.selectNewTask} serachByPriorityNumber={this.fetchTask} deleteId={this.deleteTask}/>
 
 				</div>
 			</div>
@@ -110,9 +109,10 @@ class App extends React.Component<{}, IState> {
 
 	// GET Task
 	private fetchTask(id: any) {
-		let url = "https://msaphase22018api.azurewebsites.net/api/TaskItems"
+		let url = "https://2019msaphase2devops.azurewebsites.net/api/Tasks"
 		if (id !== "") {
-			url += "/Id?=" + id
+			//url += "/id?=" + id
+			url += "/"+ id
 		}
         fetch(url, {
             method: 'GET'
@@ -120,8 +120,17 @@ class App extends React.Component<{}, IState> {
         .then(res => res.json())
         .then(json => {
 			let currentTask = json[0]
+			//console.log(json[0])
+			//console.log(json)
 			if (currentTask === undefined) {
-				currentTask = {"id":""}
+				if(json === undefined){
+					currentTask = {"id":""}
+					console.log(json)
+				}else{
+					currentTask = json
+					console.log(json)
+				}
+				
 			}
 			this.setState({
 				currentTask,
@@ -135,6 +144,8 @@ class App extends React.Component<{}, IState> {
 		  startDate: date
 		});
 	  }
+
+
 	// POST Task
 	private createTask() {
 		this.setState({ open: false });
@@ -148,21 +159,32 @@ class App extends React.Component<{}, IState> {
 			return;
 		}
 
-	
-		fetch('https://msaphase22018api.azurewebsites.net/api/TaskItems', {
+		console.log(taskDeadline)
+		console.log(taskDeadline.value)
+
+		let temp = taskDeadline.value
+		//temp = moment(temp).format("YYYY-MM-DD hh:mm:ss")
+		
+		
+
+		fetch('https://2019msaphase2devops.azurewebsites.net/api/Tasks', {
 			method: 'POST',
 			headers: {
 				'Accept': 'application/json',
 				'Content-Type': 'application/json',
 			},
-		
-			
 			body: JSON.stringify({
-				task_Name: taskName.value,
-				task_Priority: Priority.value,
-				task_Description: taskDescription.value,
-				task_CourseNumber: taskCourseNumber.value,
-				task_Deadline: taskDeadline
+				// TaskName: taskName.value,
+				// TaskPriority: Priority.value,
+				// CourseNumber: taskDescription.value,
+				// TaskDescription: taskCourseNumber.value,
+				// DateAndTime: taskDeadline
+					TaskName: taskName.value,
+					TaskPriority: Priority.value,
+					CourseNumber: taskDescription.value,
+					TaskDescription: taskCourseNumber.value,
+					DateAndTime: temp
+					//DateAndTime: '2015-11-05 14:29:36'
 			})
 			})
 			return;
@@ -172,7 +194,7 @@ class App extends React.Component<{}, IState> {
 
 	 // DELETE meme
 	 private deleteTask(id: any) {
-        const url = "https://msaphase22018api.azurewebsites.net/api/TaskItems/" + id
+        const url = "https://2019msaphase2devops.azurewebsites.net/api/Tasks/" + id
 
 		fetch(url, {
 			method: 'DELETE'
@@ -200,7 +222,7 @@ class App extends React.Component<{}, IState> {
 		}
 
         
-		fetch('https://msaphase22018api.azurewebsites.net/api/TaskItems', {
+		fetch('https://2019msaphase2devops.azurewebsites.net/api/Tasks', {
 			body: JSON.stringify({
 				task_id:this.state.currentTask.id,
                 task_Name: taskName.value,

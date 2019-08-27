@@ -4,19 +4,30 @@ interface IProps {
     tasks: any[],
     selectNewTask: any,
     serachByPriorityNumber: any,
-  
+    deleteId: any,
 }
 
 export default class TaskList extends React.Component<IProps> {
     
+  
     constructor(props: any ) {
-        
-        super(props)   
-        this.searchByPriority = this.searchByPriority.bind(this)
 
+        super(props)
+        this.fetchRowDeatils = this.fetchRowDeatils.bind(this)
+        this.searchByPriority = this.searchByPriority.bind(this)
+        
+        this.state = {
+            deleteId:'',}
+        this.deleteTaskById = this.deleteTaskById.bind(this)
+       // this.handleClick = this.handleClick.bind(this);
     }
     
+    // handleClick(event:any) {
+	// 	const id = event.target.id;
+	// 	console.log(id);
+    //   }
 
+    //   <button onClick={this.handleDelete}>Delete</button>
 	public render() {
        
 		return (
@@ -27,6 +38,8 @@ export default class TaskList extends React.Component<IProps> {
                         <input type="text" id="search-tag-textbox" className="form-control" placeholder="Search Tasks By Priority" />
                         <div className="input-group-append">
                             <div className="btn btn-outline-secondary search-button" onClick = {this.searchByPriority}>Search</div>
+                        	<div className="btn btn-primary btn-action btn-add" onClick={this.deleteTaskById}>Delete Task</div>
+
                         </div>
                     </div>  
                 </div>
@@ -55,35 +68,41 @@ export default class TaskList extends React.Component<IProps> {
 
         for (let i = 0; i < tasksList.length; i++) {
             const children = []
-            const meme = tasksList[i]
+            const task = tasksList[i]
+
+            //console.log(task)
+            //console.log(task.id)
             //add if statement here
-            if(meme.id <5){
+             //onClick={this.fetchRowDeatils}
+            if(task.taskId <5){
                 children.push(<div className="isa_success">
-              
-                <td key={"id" + i}>{"Id: " +meme.id}</td>
-                <td key={"Task" + i}>{"Task: " +meme.task_Name}</td>
-                <td key={"Priority" + i}>{" Priority "+ meme.task_Priority}</td>
-                <td key={"Description" + i}>{"Description: "+ meme.task_Description}</td>
-                <td key={"Course Number" + i}>{"Course Number: "+ meme.task_CourseNumber}</td>
-                <td key={"Task Deadline" + i}>{"Task Deadline: "+ meme.task_Deadline}</td>
+                <tr key={task.taskId}  onClick={() => this.fetchRowDeatils(task.taskId)}>
+                <td key={"id" + i}>{"Id: " +task.taskId}</td>
+                <td key={"Task" + i}>{"Task: " +task.taskName}</td>
+                <td key={"Priority" + i}>{" Priority "+ task.taskPriority}</td>
+                <td key={"Description" + i}>{"Description: "+ task.taskDescription}</td>
+                <td key={"Course Number" + i}>{"Course Number: "+ task.courseNumber}</td>
+                <td key={"Task Deadline" + i}>{"Task Deadline: "+ task.dateAndTime}</td></tr>
                 </div>)
                
-            }else if((meme.id >= 5) && (meme.id < 10)){
+            }else if((task.taskId >= 5) && (task.taskId < 10)){
                 children.push(<div className="isa_warning">
-                 <td key={"id" + i}>{"Id: " +meme.id}</td>
-                <td key={"Task" + i}>{"Task: " +meme.task_Name}</td>
-                <td key={"Priority" + i}>{" Priority "+ meme.task_Priority}</td>
-                <td key={"Description" + i}>{"Description: "+ meme.task_Description}</td>
-                <td key={"Course Number" + i}>{"Course Number: "+ meme.task_CourseNumber}</td>
-                <td key={"Task Deadline" + i}>{"Task Deadline: "+ meme.task_Deadline}</td></div>)
+                <tr key={task.taskId} onClick={() => this.fetchRowDeatils(task.taskId)}>
+                <td key={"id" + i}>{"Id: " +task.taskId}</td>
+                <td key={"Task" + i}>{"Task: " +task.taskName}</td>
+                <td key={"Priority" + i}>{" Priority "+ task.taskPriority}</td>
+                <td key={"Description" + i}>{"Description: "+ task.taskDescription}</td>
+                <td key={"Course Number" + i}>{"Course Number: "+ task.courseNumber}</td>
+                <td key={"Task Deadline" + i}>{"Task Deadline: "+ task.dateAndTime}</td></tr></div>)
             }else{
                 children.push(<div className="isa_error">
-               <td key={"id" + i}>{"Id: " +meme.id}</td>
-                <td key={"Task" + i}>{"Task: " +meme.task_Name}</td>
-                <td key={"Priority" + i}>{" Priority "+ meme.task_Priority}</td>
-                <td key={"Description" + i}>{"Description: "+ meme.task_Description}</td>
-                <td key={"Course Number" + i}>{"Course Number: "+ meme.task_CourseNumber}</td>
-                <td key={"Task Deadline" + i}>{"Task Deadline: "+ meme.task_Deadline}</td></div>)
+                <tr key={task.taskId} onClick={() => this.fetchRowDeatils(task.taskId)} >
+                <td key={"id" + i}>{"Id: " +task.taskId}</td>
+                <td key={"Task" + i}>{"Task: " +task.taskName}</td>
+                <td key={"Priority" + i}>{" Priority "+ task.taskPriority}</td>
+                <td key={"Description" + i}>{"Description: "+ task.taskDescription}</td>
+                <td key={"Course Number" + i}>{"Course Number: "+ task.courseNumber}</td>
+                <td key={"Task Deadline" + i}>{"Task Deadline: "+ task.dateAndTime}</td></tr></div>)
             }
             
             table.push(<tr key={i+""} id={i+""} onClick= {this.onOpenTaskModal.bind(this, i)}>{children}</tr>)
@@ -99,6 +118,13 @@ export default class TaskList extends React.Component<IProps> {
     //     }
     // }
 
+    // "taskId": 5,
+    // "taskName": "TEST1",
+    // "taskPriority": 1,
+    // "courseNumber": "CourseNumber",
+    // "taskDescription": "this is the course description",
+    // "dateAndTime": "2015-11-05T14:29:36"
+
     // Search meme by tag
     private searchByPriority() {
         const textBox = document.getElementById("search-tag-textbox") as HTMLInputElement
@@ -109,10 +135,28 @@ export default class TaskList extends React.Component<IProps> {
         this.props.serachByPriorityNumber(ID)  
     }
 
+
+    fetchRowDeatils = (idValue:any) => {
+        //let row = e.target.getAttribute('key');
+        let temp = parseInt(idValue,10)
+        this.setState({deleteId: temp});
+        console.log('mouse click detected'+temp);
+        //this.props.deleteId(temp);
+    }
+
+     deleteTaskById(){
+       let temp = this.state
+       console.log(temp)
+       console.log(temp["deleteId"])
+        this.props.deleteId(temp["deleteId"]);
+    }
+    
     private onOpenTaskModal = () => {
 		this.setState({ open: true });
 	  };
 
+
+      
       	// Modal close
 
 }
