@@ -5,6 +5,7 @@ interface IProps {
     selectNewTask: any,
     serachByPriorityNumber: any,
     deleteId: any,
+    
 }
 
 export default class TaskList extends React.Component<IProps> {
@@ -74,7 +75,7 @@ export default class TaskList extends React.Component<IProps> {
             //console.log(task.id)
             //add if statement here
              //onClick={this.fetchRowDeatils}
-            if(task.taskId <5){
+            if(task.taskPriority <5){
                 children.push(<div className="isa_success">
                 <tr key={task.taskId}  onClick={() => this.fetchRowDeatils(task.taskId)}>
                 <td key={"id" + i}>{"Id: " +task.taskId}</td>
@@ -85,7 +86,7 @@ export default class TaskList extends React.Component<IProps> {
                 <td key={"Task Deadline" + i}>{"Task Deadline: "+ task.dateAndTime}</td></tr>
                 </div>)
                
-            }else if((task.taskId >= 5) && (task.taskId < 10)){
+            }else if((task.taskPriority >= 5) && (task.taskPriority < 10)){
                 children.push(<div className="isa_warning">
                 <tr key={task.taskId} onClick={() => this.fetchRowDeatils(task.taskId)}>
                 <td key={"id" + i}>{"Id: " +task.taskId}</td>

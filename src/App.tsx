@@ -5,6 +5,7 @@ import TaskList from './components/TaskList';
 import Applogo from './image1385.png';
 import DatePicker from 'react-datepicker'
 import "react-datepicker/dist/react-datepicker.css";
+import * as Webcam from "react-webcam";
 //import moment from 'react-moment';
 
 interface IState {
@@ -13,6 +14,10 @@ interface IState {
 	Tasks: any[],
 	open: boolean,
 	uploadFileList: any,
+	authenticated: boolean,
+	refCamera: any,
+	predictionResult: any
+
 }
 
 class App extends React.Component<{}, IState> {
@@ -23,9 +28,13 @@ class App extends React.Component<{}, IState> {
 			currentTask: {"Id":0, "taskName":"task1 ","Priority":"","Course Number":"","Task Description":"","Enter Due Date":"0"},
 			Tasks: [],
 			open: false,
-			uploadFileList: null
+			uploadFileList: null,
+			authenticated: false,
+			refCamera: React.createRef(),
+			predictionResult: null
 		}     
-		
+		this.authenticate = this.authenticate.bind(this)
+
 		this.fetchTask("")
 		this.selectNewTask = this.selectNewTask.bind(this)
 		this.fetchTask = this.fetchTask.bind(this)
@@ -35,27 +44,46 @@ class App extends React.Component<{}, IState> {
 
 	public render() {
 		const { open } = this.state;
+		const { authenticated } = this.state
 		//const selectedTask = this.state.currentTask
 		return (
-		<div>
-			<div className="header-wrapper">
-				<div className="container header">
-					<img src={Applogo} height='40'/> Optimize Schedule
-					
-				</div>
-					<div className="btn-group">
-					<div className="btn btn-primary btn-action btn-add" onClick={this.onOpenTaskModal }>New Task</div>
-					<div className="btn btn-primary btn-action btn-add" onClick={this.updateTask }>Update Task</div>
-					</div>
-			</div>
-			<div className="container">
-				<div className="row">
-					</div>
-					<div className="container">
-						<TaskList tasks={this.state.Tasks} selectNewTask={this.selectNewTask} serachByPriorityNumber={this.fetchTask} deleteId={this.deleteTask}/>
+			<div>
+				<div>
+                {(!authenticated) ?
+                    <div className = "webcam-container">
+                        <Webcam
+                            audio={false}
+                            screenshotFormat="image/jpeg"
+                            ref={this.state.refCamera}
+                        />
+                        <div className="row nav-row">
+                            <div className="btn btn-primary bottom-button" onClick={this.authenticate}>Login</div>
+                        </div>
+                    </div>
+					: ""}
+					{(authenticated) ?
+					 <div>
+							<div className="header-wrapper">
+								<div className="container header">
+									<img src={Applogo} height='40'/> Optimize Schedule
+									
+								</div>
+									<div className="btn-group">
+									<div className="btn btn-primary btn-action btn-add" onClick={this.onOpenTaskModal }>New Task</div>
+									<div className="btn btn-primary btn-action btn-add" onClick={this.updateTask }>Update Task</div>
+									</div>
+							</div>
+							<div className="container">
+								<div className="row">
+									</div>
+									<div className="container">
+										<TaskList tasks={this.state.Tasks} selectNewTask={this.selectNewTask} serachByPriorityNumber={this.fetchTask} deleteId={this.deleteTask}/>
 
-				</div>
-			</div>
+								</div>
+							</div>
+							</div>
+							: ""}
+							</div>
 			<Modal open={open} onClose={this.onCloseModal}>
 				<form>
 					<div className="form-group">
@@ -85,7 +113,7 @@ class App extends React.Component<{}, IState> {
 					<button type="button" className="btn" onClick={this.createTask}>Create Task</button>
 				</form>
 			</Modal>
-
+                    
 		</div>
 
 		);
@@ -208,6 +236,46 @@ class App extends React.Component<{}, IState> {
               location.reload()
 			}
 		  })
+	}
+	
+	private getFaceRecognitionResult(image: string) {
+        const url = "https://southcentralus.api.cognitive.microsoft.com/customvision/v3.0/Prediction/3182a140-52c0-466c-8e82-c08be021e7df/classify/iterations/Iteration1/image"
+        if (image === null) {
+            return;
+        }
+        const base64 = require('base64-js');
+        const base64content = image.split(";")[1].split(",")[1]
+        const byteArray = base64.toByteArray(base64content);
+        fetch(url, {
+            body: byteArray,
+            headers: {
+                'cache-control': 'no-cache', 'Prediction-Key': '2c6f27b1df794d1e9b0c2243e541b0d8', 'Content-Type': 'application/octet-stream'
+            },
+            method: 'POST'
+        })
+            .then((response: any) => {
+                if (!response.ok) {
+                    // Error State
+                    alert(response.statusText)
+                } else {
+                    response.json().then((json: any) => {
+                        console.log(json.predictions[0])
+
+                        this.setState({ predictionResult: json.predictions[0] })
+                        if (this.state.predictionResult.probability > 0.7) {
+                            this.setState({ authenticated: true })
+                        } else {
+                            this.setState({ authenticated: false })
+                            console.log(json.predictions[0].tagName)
+                        }
+                    })
+                }
+            })
+	}
+	
+	private authenticate() {
+        const screenshot = this.state.refCamera.current.getScreenshot();
+        this.getFaceRecognitionResult(screenshot);
     }
 
     // PUT meme
